@@ -1,0 +1,101 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client"
+  output   = "../app/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User{
+  id  Int @id @default(autoincrement()) 
+  email String  @unique
+  phone String  @unique
+  password  String
+}
+
+model Category{
+  id  Int @id @default(autoincrement())
+  name  String  @unique
+
+  bicyles Bicycle[]
+  rent_condition  RentCondition?
+  tarrif  Tarrif[]
+  applications  Applications[]
+  promo_code  PromoCode?
+}
+
+model Bicycle {
+  id  Int @id @default(autoincrement())
+  name  String
+  description String
+  slug  String  @unique
+  wear  Int @default(0)
+  image String?
+  available Boolean @default(true)
+
+  category_id Int
+  category  Category @relation(fields: [category_id], references: [id])
+}
+
+enum Weather {
+  Clear
+  Fog
+  Rain
+  Snow
+}
+
+model RentCondition {
+  id  Int @id @default(autoincrement())
+  weather String[]
+  user_rating Float?
+
+  category_id Int @unique
+  category  Category @relation(fields: [category_id], references: [id])
+}
+
+enum Tarrif_Type {
+  Fixed
+  Dynamic
+}
+
+model Tarrif{
+  id  Int @id @default(autoincrement())
+  name  String
+  type  Tarrif_Type
+  price_per_min Int
+  min_price Int?
+  max_price Int?
+  isArchived  Boolean @default(false)
+
+  category_id Int
+  category  Category @relation(fields: [category_id], references: [id])
+}
+
+model Applications {
+  id  Int @id @default(autoincrement())
+  name  String
+  phone String
+  email String
+  approved  Boolean @default(false)
+
+  category_id Int
+  category  Category @relation(fields: [category_id], references: [id])
+
+  created_at  DateTime  @default(now())
+}
+
+model PromoCode {
+  code  String @id @default(uuid())
+  expires_at  DateTime
+  free_usage_min  Int?
+  discount_percent  Float?
+
+  category_id Int @unique
+  category  Category @relation(fields: [category_id], references: [id])
+}
